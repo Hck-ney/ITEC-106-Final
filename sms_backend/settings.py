@@ -12,14 +12,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', '8z!$g8vhqh=cos8d5x*q&wi50e!5e+g6^0i^(@)tyq13_t-gh$') # Replace with a strong default or ensure it's always set in Render env
 
 # --- SECURITY WARNING: don't run with debug turned on in production! ---
-DEBUG = True # Changed to always be True as requested. REMEMBER: THIS IS INSECURE FOR PRODUCTION!
+# This line correctly sets DEBUG to False on Render, and True locally.
+DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = []
 # Render sets the "RENDER" environment variable to "true"
 if 'RENDER' in os.environ:
-    ALLOWED_HOSTS += [os.environ.get('RENDER_EXTERNAL_HOSTNAME')] # Add Render's hostname
+    # Add Render's external hostname. This is crucial for DEBUG = False.
+    ALLOWED_HOSTS += [os.environ.get('RENDER_EXTERNAL_HOSTNAME')]
 else:
-    ALLOWED_HOSTS += ['127.0.0.1', 'localhost'] # For local development
+    # For local development
+    ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -142,15 +145,24 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Configuration
-# In production, restrict this to your frontend's Render URL
+# CORS Configuration for both local and production environments
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000", # For local development if backend is on 8000
+    "http://localhost:8000", # For local development if backend is on localhost:8000
+]
+
 if 'RENDER' in os.environ:
-    # Replace with your actual frontend Render.com URL after deployment
-    CORS_ALLOWED_ORIGINS = [
-        f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME').replace('-backend', '-frontend')}", # Example: if backend is X-backend, frontend is X-frontend
-        # Or hardcode if you know it: "https://your-frontend-name.onrender.com"
-    ]
-    # Allow credentials if needed (e.g., for sessions/cookies, though generally not for simple APIs)
-    CORS_ALLOW_CREDENTIALS = False # Change to True if your frontend needs to send cookies/auth headers
-else:
-    CORS_ALLOW_ALL_ORIGINS = True # Keep for local development
+    # Dynamically determine the frontend's Render URL based on the backend's hostname.
+    # Assuming your frontend service name is 'your-backend-name-frontend' if backend is 'your-backend-name'.
+    backend_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if backend_hostname:
+        # Example: if backend is 'sms-backend.onrender.com', frontend might be 'sms-frontend.onrender.com'
+        # Adjust the replacement logic if your frontend naming convention is different.
+        frontend_hostname = backend_hostname.replace('-backend', '-frontend')
+        CORS_ALLOWED_ORIGINS.append(f"https://{frontend_hostname}")
+        # Also ensure the backend's own URL is allowed for API testing directly (e.g., /api/)
+        CORS_ALLOWED_ORIGINS.append(f"https://{backend_hostname}")
+
+
+# Allow credentials if needed (e.g., for sessions/cookies, though generally not for simple APIs)
+CORS_ALLOW_CREDENTIALS = False # Change to True if your frontend needs to send cookies/auth headers
