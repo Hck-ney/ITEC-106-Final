@@ -33,14 +33,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'students',
-    'whitenoise.runserver_nostatic', # Add for local static files during development
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Add for serving static files efficiently in production
+    # 'whitenoise.middleware.WhiteNoiseMiddleware', <-- REMOVED from INSTALLED_APPS
+    # 'whitenoise.runserver_nostatic', # Only necessary for local static serving with runserver
+    # For WhiteNoise to work, ensure 'whitenoise' is implicitly installed (from requirements.txt)
+    # and its middleware is correctly placed. No explicit app config needed for whitenoise itself.
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # WhiteNoise must be listed directly after SecurityMiddleware
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Add this for static file serving
+    # WhiteNoise must be listed directly after SecurityMiddleware for proper static file serving
+    'whitenoise.middleware.WhiteNoiseMiddleware', # This is where it belongs
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -85,7 +87,6 @@ DATABASES = {
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         default=os.environ.get('DATABASE_URL')
-        # Removed conn_max_age as it causes TypeError with some dj_database_url versions
     )
 
 
@@ -131,6 +132,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     # os.path.join(BASE_DIR, 'static'), # Uncomment if you have a top-level /static/ folder
 ]
+
+# Set STATICFILES_STORAGE for WhiteNoise in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
