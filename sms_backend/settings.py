@@ -10,22 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+import dj_database_url # Import for PostgreSQL database configuration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# --- SECURITY WARNING: keep the secret key used in production secret! ---
+# For production, load from environment variable
+SECRET_KEY = os.environ.get('SECRET_KEY', '8z!$g8vhqh=cos8d5x*q&wi50e!5e+g6^0i^(@)tyq13_t-gh$') # Replace with a strong default or ensure it's always set in Render env
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8c4=bzcl*e_rlt%nmmp9^pwpakf)c%#m8@9s_g(7q=+mfx68g@'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# --- SECURITY WARNING: don't run with debug turned on in production! ---
+DEBUG = 'RENDER' not in os.environ # Automatically set DEBUG to False on Render
 
 ALLOWED_HOSTS = []
+# Render sets the "RENDER" environment variable to "true"
+if 'RENDER' in os.environ:
+    ALLOWED_HOSTS += [os.environ.get('RENDER_EXTERNAL_HOSTNAME')] # Add Render's hostname
+else:
+    ALLOWED_HOSTS += ['127.0.0.1', 'localhost'] # For local development
 
 
 # Application definition
@@ -37,15 +41,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework', # Add this
-    'corsheaders',    # Add this
-    'students',       # Add your app here
+    'rest_framework',
+    'corsheaders',
+    'students',
+    'whitenoise.runserver_nostatic', # Add for local static files during development
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Add for serving static files in production
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise must be listed directly after SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Add this for static file serving
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # Add this (order matters, place it high)
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -55,12 +63,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'sms_backend.urls'
 
-import os # Ensure os is imported
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR)], # Add the project base directory here
+        'DIRS': [BASE_DIR], # This allows Django to find index.html in the project root
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,9 +92,16 @@ DATABASES = {
     }
 }
 
+# Use PostgreSQL in production (on Render)
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
+    )
+
 
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -121,17 +134,29 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+# This is the directory where `collectstatic` will gather all static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# For local development, if you have static files outside of app/static/ folders
+STATICFILES_DIRS = [
+    # os.path.join(BASE_DIR, 'static'), # Uncomment if you have a top-level /static/ folder
+]
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-CORS_ALLOW_ALL_ORIGINS = True # Be careful with this in production!
-# Or, for more security in development, you can specify allowed origins:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://127.0.0.1:8000", # Example if your frontend is on a different port/domain
-#     "http://localhost:8000",
-# ]
+# CORS Configuration
+# In production, restrict this to your frontend's Render URL
+if 'RENDER' in os.environ:
+    # Replace with your actual frontend Render.com URL after deployment
+    CORS_ALLOWED_ORIGINS = [
+        f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME').replace('-backend', '-frontend')}", # Example: if backend is X-backend, frontend is X-frontend
+        # Or hardcode if you know it: "https://your-frontend-name.onrender.com"
+    ]
+    # Allow credentials if needed (e.g., for sessions/cookies, though generally not for simple APIs)
+    CORS_ALLOW_CREDENTIALS = False # Change to True if your frontend needs to send cookies/auth headers
+else:
+    CORS_ALLOW_ALL_ORIGINS = True # Keep for local development
