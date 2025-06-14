@@ -12,19 +12,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', '8z!$g8vhqh=cos8d5x*q&wi50e!5e+g6^0i^(@)tyq13_t-gh$') # Replace with a strong default or ensure it's always set in Render env
 
 # --- SECURITY WARNING: don't run with debug turned on in production! ---
-# This line correctly sets DEBUG to False on Render (production), and True locally (development).
+# This line correctly sets DEBUG to False on Render, and True locally.
 DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = []
 # Render sets the "RENDER" environment variable to "true"
 if 'RENDER' in os.environ:
-    # Add Render's external hostname to ALLOWED_HOSTS for production
-    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-    if RENDER_EXTERNAL_HOSTNAME:
-        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    # Add Render's external hostname. This is crucial for DEBUG = False.
+    ALLOWED_HOSTS += [os.environ.get('RENDER_EXTERNAL_HOSTNAME')]
 else:
     # For local development
-    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
+    ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -38,11 +36,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'students',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware', <-- REMOVED from INSTALLED_APPS
+    # 'whitenoise.runserver_nostatic', # Only necessary for local static serving with runserver
+    # For WhiteNoise to work, ensure 'whitenoise' is implicitly installed (from requirements.txt)
+    # and its middleware is correctly placed. No explicit app config needed for whitenoise itself.
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Place after SecurityMiddleware for static files
+    # WhiteNoise must be listed directly after SecurityMiddleware for proper static file serving
+    'whitenoise.middleware.WhiteNoiseMiddleware', # This is where it belongs
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,7 +60,7 @@ ROOT_URLCONF = 'sms_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR],
+        'DIRS': [BASE_DIR], # This allows Django to find index.html in the project root
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,11 +86,10 @@ DATABASES = {
     }
 }
 
-# Use PostgreSQL in production (on Render) if DATABASE_URL is provided
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+# Use PostgreSQL in production (on Render)
+if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
-        default=DATABASE_URL
+        default=os.environ.get('DATABASE_URL')
     )
 
 
@@ -151,11 +153,12 @@ CORS_ALLOWED_ORIGINS = [
 
 if 'RENDER' in os.environ:
     # Dynamically determine the frontend's Render URL based on the backend's hostname.
+    # Assuming your frontend service name is 'your-backend-name-frontend' if backend is 'your-backend-name'.
     backend_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
     if backend_hostname:
-        # Assuming your frontend service name is 'your-backend-name-frontend' if backend is 'your-backend-name'.
+        # Example: if backend is 'sms-backend.onrender.com', frontend might be 'sms-frontend.onrender.com'
         # Adjust the replacement logic if your frontend naming convention is different.
-        frontend_hostname = backend_hostname.replace('-backend', '-frontend') # Example: sms-backend -> sms-frontend
+        frontend_hostname = backend_hostname.replace('-backend', '-frontend')
         CORS_ALLOWED_ORIGINS.append(f"https://{frontend_hostname}")
         # Also ensure the backend's own URL is allowed for API testing directly (e.g., /api/)
         CORS_ALLOWED_ORIGINS.append(f"https://{backend_hostname}")
