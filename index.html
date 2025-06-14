@@ -1,117 +1,1135 @@
+<!-- StudentManagementSystem/index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student List</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background: linear-gradient(to right, #f1f2f6, #dff9fb);
-      font-family: 'Segoe UI', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS for a clean look */
+        html, body {
+            height: 100%; /* Ensure html and body take full viewport height */
+            overflow: hidden; /* Hide main document scrollbars for fixed layout */
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zm1 5v1H5z'/%3E%3C/g%3E%3C/svg%3E"); /* Subtle background pattern */
+            background-repeat: repeat;
+        }
+        .container {
+            max-width: 1700px; /* Further increased max-width for more horizontal space */
+            height: calc(100% - 4rem); /* Adjust container height to fit viewport minus margin */
+            margin: 2rem auto;
+            padding: 2rem; /* Generous padding for content inside */
+            background-color: #ffffff;
+            border-radius: 16px; /* More rounded corners for a softer look */
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); /* Stronger, deeper shadow */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Min width for smaller screens */
+            gap: 2rem; /* Increased gap between panels */
+            overflow-y: hidden; /* Crucial: Prevent vertical scrolling on the main container */
+            box-sizing: border-box; /* Include padding in height calculation */
+        }
+        @media (min-width: 1024px) {
+            .container {
+                /* Three columns: Student (1fr), Subject (1fr), Dynamic Right Panel (1.5fr) */
+                grid-template-columns: 1fr 1fr 1.5fr; /* Balanced ratios for desktop landscape */
+                height: calc(100% - 4rem); /* Maintain height calculation for landscape */
+                overflow-y: hidden; /* Explicit for clarity on large screens */
+            }
+        }
 
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 20px;
-      border-bottom: 2px solid #ccc;
-    }
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 1.2rem; /* More space below headings */
+        }
+        h1 {
+            font-size: 3rem; /* Larger main title */
+            font-weight: 800; /* Extra bold */
+            text-align: center;
+            width: 100%;
+            margin-bottom: 2.5rem;
+            grid-column: 1 / -1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05); /* Subtle text shadow */
+        }
+        h2 {
+            font-size: 2.2rem; /* Larger subheadings */
+            font-weight: 700;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .panel {
+            background-color: #fdfdfd;
+            padding: 2rem; /* Generous padding inside panels */
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* More pronounced shadow for panels */
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            min-height: 0;
+            overflow-y: auto; /* Allow internal scrolling within panels if content overflows */
+            min-width: 0; /* Crucial for grid items to shrink below intrinsic content size */
+            border: 1px solid #e2e8f0; /* Subtle border for definition */
+        }
 
-    .student-card {
-      border: none;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.8);
-      transition: all 0.3s ease-in-out;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
+        input[type="text"], input[type="email"], input[type="date"], input[type="number"], select {
+            width: 100%;
+            padding: 0.9rem; /* Increased padding for inputs */
+            margin-bottom: 1.25rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #ffffff;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="date"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25); /* Stronger focus shadow */
+        }
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: 600; /* Bolder labels */
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.9rem 1.8rem; /* Larger buttons */
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); /* More prominent button shadow */
+            border: none;
+            font-size: 1rem;
+        }
+        button.primary {
+            background-color: #6366f1; /* Indigo 500 */
+            color: white;
+            background-image: linear-gradient(to right, #6366f1, #5a57e3); /* Gradient for primary buttons */
+        }
+        button.primary:hover {
+            background-color: #4f46e5; /* Indigo 600 */
+            background-image: linear-gradient(to right, #5a57e3, #4f46e5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px); /* More pronounced lift */
+        }
+        button.secondary {
+            background-color: #cbd5e1; /* Slate 300 */
+            color: #334155;
+            margin-left: 1rem; /* More spacing */
+        }
+        button.secondary:hover {
+            background-color: #94a3b8; /* Slate 400 */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+        }
+        button.danger {
+            background-color: #ef4444; /* Red 500 */
+            color: white;
+            margin-left: 1rem; /* More spacing */
+            background-image: linear-gradient(to right, #ef4444, #dc2626); /* Gradient for danger buttons */
+        }
+        button.danger:hover {
+            background-color: #dc2626; /* Red 600 */
+            background-image: linear-gradient(to right, #dc2626, #b91c1c);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+        }
+        .message-box {
+            padding: 1.5rem; /* More padding */
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid;
+            font-weight: 600; /* Bolder text */
+            font-size: 1.05rem;
+            display: none;
+            grid-column: 1 / -1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Subtle shadow for messages */
+        }
+        .message-box.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-color: #6ee7b7;
+        }
+        .message-box.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            font-size: 0.95rem; /* Slightly larger table content font */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        th, td {
+            padding: 1rem 1.2rem; /* More padding in cells */
+            text-align: left;
+        }
+        th {
+            background-color: #eef2ff;
+            font-weight: 700; /* Bolder headers */
+            color: #4338ca;
+            text-transform: uppercase;
+            font-size: 0.85rem; /* Slightly larger text for headers */
+            letter-spacing: 0.05em;
+        }
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        tr:hover {
+            background-color: #e0e7ff;
+        }
+        td {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .table-actions button {
+            padding: 0.6rem 1rem; /* Adjusted button size */
+            font-size: 0.85rem;
+            border-radius: 8px;
+            box-shadow: none;
+            transform: none;
+            margin-left: 0;
+            margin-right: 0.8rem; /* Consistent spacing */
+        }
+        .table-actions button:hover {
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem; /* Increased gap */
+            flex-wrap: wrap;
+        }
+        .flex-row button {
+            margin-left: 0;
+        }
+        .overflow-x-auto {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #enrollmentSection, #gradeDetailsSection {
+            margin-top: 2rem; /* More vertical space */
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        #selectedStudentInfo {
+            background-color: #eef2ff; /* Lighter blue for info */
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #c7d2fe;
+            color: #1e3a8a;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        #totalGradeDisplay {
+            min-width: 80px; /* Ensure grade display has enough space */
+            text-align: right;
+            font-size: 1.3rem; /* Larger total grade display */
+            font-weight: 700;
+        }
 
-    .student-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-
-    .average-score {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #0984e3;
-      margin-top: 10px;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-    }
-
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 0.875rem;
-    }
-
-    .add-student-btn {
-      border-radius: 30px;
-      padding: 10px 20px;
-      font-weight: 500;
-    }
-
-    .no-students {
-      text-align: center;
-      font-size: 1.2rem;
-      color: #636e72;
-      padding: 40px 0;
-    }
-  </style>
+        /* Adjustments for smaller screens (mobile/tablet portrait) */
+        @media (max-width: 1023px) {
+            html, body {
+                overflow: auto; /* Allow scrolling on smaller devices */
+                background-image: none; /* Remove pattern on small screens for better performance */
+            }
+            .container {
+                padding: 1rem;
+                margin: 1rem auto;
+                grid-template-columns: 1fr; /* Single column layout */
+                gap: 1.5rem;
+                height: auto; /* Auto height on smaller screens to allow scrolling */
+                overflow-y: auto; /* Allow container to scroll on smaller screens */
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            h2 {
+                font-size: 1.6rem;
+            }
+            .panel {
+                padding: 1.5rem;
+            }
+            button {
+                width: 100%;
+                margin-top: 0.75rem;
+                margin-left: 0 !important;
+            }
+            .table-actions button {
+                width: auto;
+                margin-bottom: 0.5rem;
+            }
+            .flex-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            .flex-row select, .flex-row button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-<body>
-  <div class="container py-5">
-    <div class="page-header">
-      <h1 class="fw-bold text-dark">🎓 Student List</h1>
-      <a href="{% url 'student-create' %}" class="btn btn-success add-student-btn shadow">
-        ➕ Add Student
-      </a>
+<body class="bg-gray-100">
+    <div class="container">
+        <h1>Student Management System</h1>
+
+        <!-- Message Box for notifications -->
+        <div id="messageBox" class="message-box success"></div>
+
+        <!-- Student Management Panel -->
+        <div class="panel">
+            <h2>Student Management</h2>
+            <form id="studentForm">
+                <input type="hidden" id="studentId">
+                <label for="studentName" class="block text-sm font-medium text-gray-700">Name:</label>
+                <input type="text" id="studentName" placeholder="Student Name" required>
+
+                <label for="studentStudentId" class="block text-sm font-medium text-gray-700">Student ID:</label>
+                <input type="text" id="studentStudentId" placeholder="Unique Student ID" required>
+
+                <label for="studentEmail" class="block text-sm font-medium text-gray-700">Email:</label>
+                <input type="email" id="studentEmail" placeholder="student@example.com" required>
+
+                <label for="studentDOB" class="block text-sm font-medium text-gray-700">Date of Birth (Optional):</label>
+                <input type="date" id="studentDOB">
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <button type="submit" class="primary" id="saveStudentBtn">Add Student</button>
+                    <button type="button" class="secondary" id="cancelStudentEdit" style="display:none;">Cancel Edit</button>
+                </div>
+            </form>
+
+            <h3 class="text-xl font-semibold mt-8 mb-4 text-gray-800">Student List</h3>
+            <div class="overflow-x-auto flex-grow"> <!-- Added flex-grow to table container -->
+                <table id="studentTable" class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Student ID</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Student rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Subject Management Panel -->
+        <div class="panel">
+            <h2>Subject Management</h2>
+            <form id="subjectForm">
+                <input type="hidden" id="subjectId">
+                <label for="subjectName" class="block text-sm font-medium text-gray-700">Subject Name:</label>
+                <input type="text" id="subjectName" placeholder="Subject Name" required>
+
+                <label for="subjectCode" class="block text-sm font-medium text-gray-700">Subject Code:</label>
+                <input type="text" id="subjectCode" placeholder="E.g., CS101" required>
+
+                <div class="flex flex-wrap gap-3 mt-4">
+                    <button type="submit" class="primary" id="saveSubjectBtn">Add Subject</button>
+                    <button type="button" class="secondary" id="cancelSubjectEdit" style="display:none;">Cancel Edit</button>
+                </div>
+            </form>
+
+            <h3 class="text-xl font-semibold mt-8 mb-4 text-gray-800">Subject List</h3>
+            <div class="overflow-x-auto flex-grow"> <!-- Added flex-grow to table container -->
+                <table id="subjectTable" class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Subject rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dynamic Right Side Panel Container -->
+        <div class="panel dynamic-right-panel-container">
+            <!-- Student Details & Enrollments Content -->
+            <div id="studentDetailEnrollmentContent" style="display:none;"> <!-- Initially hide this content to show Grades by default or just student info -->
+                <h2 id="studentDetailsTitle">Select a Student to View Details</h2>
+                <div id="selectedStudentInfo" class="mb-4 text-lg text-gray-700 font-medium hidden"></div> <!-- Hidden by default -->
+
+                <div id="enrollmentSection" style="display:none;">
+                    <h3 class="text-xl font-semibold mt-6 mb-3 text-gray-800">Enrollments</h3>
+                    <form id="enrollmentForm" class="flex-row">
+                        <label for="enrollmentSubjectSelect" class="block text-sm font-medium text-gray-700 mr-2 min-w-[80px]">Enroll in:</label>
+                        <select id="enrollmentSubjectSelect" class="flex-grow"></select>
+                        <button type="submit" class="primary w-auto">Enroll Student</button>
+                    </form>
+
+                    <div class="overflow-x-auto">
+                        <table id="enrollmentTable" class="min-w-full divide-y divide-gray-200 mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Enroll Date</th>
+                                    <th>Grades</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Enrollment rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Details Content (Initially hidden, shows dynamically) -->
+            <div id="gradeDetailsContent" style="display:none;"> <!-- Still hidden by default, shown by JS -->
+                <h2 class="text-xl font-semibold mb-3 text-gray-800">Grades for: <span id="gradeSubjectName" class="font-bold"></span></h2>
+                <form id="gradeForm">
+                    <input type="hidden" id="gradeId">
+                    <input type="hidden" id="gradeEnrollmentId">
+
+                    <label for="activityGrade" class="block text-sm font-medium text-gray-700">Activity Grade (0-100):</label>
+                    <input type="number" id="activityGrade" min="0" max="100" step="0.01" value="0.00">
+
+                    <label for="quizGrade" class="block text-sm font-medium text-gray-700">Quiz Grade (0-100):</label>
+                    <input type="number" id="quizGrade" min="0" max="100" step="0.01" value="0.00">
+
+                    <label for="examGrade" class="block text-sm font-medium text-gray-700">Exam Grade (0-100):</label>
+                    <input type="number" id="examGrade" min="0" max="100" step="0.01" value="0.00">
+
+                    <div class="flex items-center justify-between my-4 py-2 px-4 rounded-lg bg-blue-50 text-blue-800 border border-blue-200">
+                        <span class="font-semibold text-lg">Total Grade:</span>
+                        <span id="totalGradeDisplay" class="font-bold text-xl">0.00</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 mt-4">
+                        <button type="submit" class="primary">Save Grades</button>
+                        <button type="button" class="secondary" id="cancelGradeEdit">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div class="row mt-4">
-      {% for student in students %}
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card student-card p-3">
-          <div class="card-body">
-            <h5 class="card-title">{{ student.name }}</h5>
-            <p class="card-text text-muted">
-              📧 <strong>Email:</strong> {{ student.email }}<br />
-              🎂 <strong>Age:</strong> {{ student.age }}
-            </p>
-            <div class="average-score">
-              📊 Average Grade: {{ student.average_score|floatformat:2 }}
-            </div>
-            <div class="action-buttons mt-3">
-              <a href="{% url 'student-detail' student.id %}" class="btn btn-primary btn-sm">View</a>
-              <a href="{% url 'student-update' student.id %}" class="btn btn-warning btn-sm">Edit</a>
-              <form method="POST" action="{% url 'student-delete' student.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?')">
-                  Delete
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12">
-        <div class="no-students">No students found. Add one to get started!</div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
+    <script>
+        // API Base URL (make sure Django server is running on this port)
+        const API_BASE_URL = 'http://127.0.0.1:8000/api/'; // REMEMBER TO UPDATE THIS FOR RENDER DEPLOYMENT!
+
+        // Global variables to store data and currently selected items
+        let students = [];
+        let subjects = [];
+        let selectedStudent = null;
+        let selectedEnrollment = null;
+
+        // UI Element references
+        const messageBox = document.getElementById('messageBox');
+        const studentTableBody = document.querySelector('#studentTable tbody');
+        const subjectTableBody = document.querySelector('#subjectTable tbody');
+        const enrollmentTableBody = document.querySelector('#enrollmentTable tbody');
+        const studentForm = document.getElementById('studentForm');
+        const subjectForm = document.getElementById('subjectForm');
+        const enrollmentForm = document.getElementById('enrollmentForm');
+        const gradeForm = document.getElementById('gradeForm');
+        const enrollmentSubjectSelect = document.getElementById('enrollmentSubjectSelect');
+        const selectedStudentInfo = document.getElementById('selectedStudentInfo');
+
+        // References to the new dynamic content containers
+        const studentDetailEnrollmentContent = document.getElementById('studentDetailEnrollmentContent');
+        const gradeDetailsContent = document.getElementById('gradeDetailsContent');
+
+        const gradeSubjectName = document.getElementById('gradeSubjectName');
+        const totalGradeDisplay = document.getElementById('totalGradeDisplay');
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {boolean} isError - True if it's an error message, false for success.
+         */
+        function showMessage(message, isError = false) {
+            messageBox.textContent = message;
+            messageBox.style.display = 'block';
+            if (isError) {
+                messageBox.classList.add('error');
+                messageBox.classList.remove('success');
+            } else {
+                messageBox.classList.remove('error');
+                messageBox.classList.add('success');
+            }
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+
+        /**
+         * Clears a form by resetting its input fields.
+         * @param {HTMLFormElement} form - The form element to clear.
+         */
+        function clearForm(form) {
+            form.reset();
+            const hiddenIdField = form.querySelector('input[type="hidden"]');
+            if (hiddenIdField) {
+                hiddenIdField.value = '';
+            }
+            // Hide cancel button if editing
+            if (form.id === 'studentForm') {
+                document.getElementById('saveStudentBtn').textContent = 'Add Student';
+                document.getElementById('cancelStudentEdit').style.display = 'none';
+            } else if (form.id === 'subjectForm') {
+                document.getElementById('saveSubjectBtn').textContent = 'Add Subject';
+                document.getElementById('cancelSubjectEdit').style.display = 'none';
+            }
+        }
+
+        /**
+         * Generic function to fetch data from the API.
+         * @param {string} endpoint - The API endpoint (e.g., 'students/').
+         * @returns {Promise<Array|Object>} - The fetched data.
+         */
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching data from ${endpoint}:`, error);
+                showMessage(`Failed to load data from ${endpoint}. Please check the server and console for details.`, true);
+                return []; // Return empty array on error for lists
+            }
+        }
+
+        /**
+         * Generic function to create/update data via API.
+         * @param {string} endpoint - The API endpoint.
+         * @param {Object} data - The data to send.
+         * @param {string} method - HTTP method ('POST' or 'PUT'/'PATCH').
+         * @returns {Promise<Object>} - The response data.
+         */
+        async function sendData(endpoint, data, method = 'POST') {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                if (!response.ok) {
+                    const errorResponse = await response.json(); // Try to parse JSON error
+                    const errorMessage = errorResponse.detail || JSON.stringify(errorResponse) || `HTTP error! status: ${response.status}`;
+                    throw new Error(errorMessage);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error sending data to ${endpoint}:`, error);
+                showMessage(`Failed to save data. Error: ${error.message}`, true);
+                throw error; // Re-throw to allow calling functions to handle
+            }
+        }
+
+        /**
+         * Generic function to delete data via API.
+         * @param {string} endpoint - The API endpoint.
+         * @returns {Promise<void>}
+         */
+        async function deleteData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+                // No content expected for successful DELETE (204 No Content)
+            } catch (error) {
+                console.error(`Error deleting data from ${endpoint}:`, error);
+                showMessage(`Failed to delete data from ${endpoint}. Error: ${error.message}`, true);
+                throw error; // Re-throw to allow calling functions to handle
+            }
+        }
+
+        // --- Render Functions ---
+
+        /**
+         * Renders the list of students in the table.
+         */
+        function renderStudents() {
+            studentTableBody.innerHTML = ''; // Clear existing rows
+            if (students.length === 0) {
+                studentTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">No students found. Add one!</td></tr>';
+                return;
+            }
+
+            students.forEach(student => {
+                const row = studentTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="font-medium">${student.name}</td>
+                    <td>${student.student_id}</td>
+                    <td>${student.email}</td>
+                    <td class="table-actions">
+                        <button class="primary" onclick="viewStudentDetails(${student.id})">View</button>
+                        <button class="secondary" onclick="editStudent(${student.id})">Edit</button>
+                        <button class="danger" onclick="confirmDeleteStudent(${student.id}, '${student.name}')">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        /**
+         * Renders the list of subjects in the table.
+         */
+        function renderSubjects() {
+            subjectTableBody.innerHTML = ''; // Clear existing rows
+            if (subjects.length === 0) {
+                subjectTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">No subjects found. Add one!</td></tr>';
+                return;
+            }
+
+            subjects.forEach(subject => {
+                const row = subjectTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="font-medium">${subject.name}</td>
+                    <td>${subject.code}</td>
+                    <td class="table-actions">
+                        <button class="secondary" onclick="editSubject(${subject.id})">Edit</button>
+                        <button class="danger" onclick="confirmDeleteSubject(${subject.id}, '${subject.name}')">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        /**
+         * Populates the subject select dropdown for enrollment.
+         */
+        function populateEnrollmentSubjectSelect() {
+            enrollmentSubjectSelect.innerHTML = '<option value="">-- Select a Subject --</option>'; // Default option
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = `${subject.name} (${subject.code})`;
+                enrollmentSubjectSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Renders enrollments for the selected student.
+         * @param {Array} studentEnrollments - Array of enrollment objects for the student.
+         */
+        function renderEnrollments(studentEnrollments) {
+            enrollmentTableBody.innerHTML = '';
+            if (studentEnrollments.length === 0) {
+                enrollmentTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">Not enrolled in any subjects.</td></tr>';
+                return;
+            }
+
+            studentEnrollments.forEach(enrollment => {
+                const row = enrollmentTableBody.insertRow();
+                const subjectName = enrollment.subject_details ? enrollment.subject_details.name : 'N/A';
+                const enrollmentDate = new Date(enrollment.enrollment_date).toLocaleDateString();
+                const totalGrade = enrollment.grades ? parseFloat(enrollment.grades.total_grade).toFixed(2) : 'N/A';
+
+                row.innerHTML = `
+                    <td>${subjectName}</td>
+                    <td>${enrollmentDate}</td>
+                    <td>${totalGrade}</td>
+                    <td class="table-actions">
+                        <button class="primary" onclick="editGrades(${enrollment.id})">View/Edit Grades</button>
+                        <button class="danger" onclick="confirmDeleteEnrollment(${enrollment.id}, '${subjectName}', '${selectedStudent.name}')">Unenroll</button>
+                    </td>
+                `;
+            });
+        }
+
+        // --- Student CRUD ---
+
+        /**
+         * Fetches all students and updates the UI.
+         */
+        async function getStudents() {
+            students = await fetchData('students/');
+            renderStudents();
+            // If a student was selected, re-select them after refresh to keep context
+            if (selectedStudent) {
+                selectedStudent = students.find(s => s.id === selectedStudent.id) || null;
+                if (selectedStudent) {
+                    viewStudentDetails(selectedStudent.id);
+                } else { // Student might have been deleted
+                    document.getElementById('studentDetailsTitle').textContent = 'Select a Student to View Details';
+                    selectedStudentInfo.classList.add('hidden');
+                    // Hide both content sections in the dynamic panel
+                    studentDetailEnrollmentContent.style.display = 'none';
+                    gradeDetailsContent.style.display = 'none';
+                }
+            } else {
+                 // On initial load or no student selected, ensure correct panels are hidden
+                studentDetailEnrollmentContent.style.display = 'none';
+                gradeDetailsContent.style.display = 'none';
+            }
+        }
+
+        /**
+         * Handles student form submission (add/update).
+         */
+        studentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('studentId').value;
+            const name = document.getElementById('studentName').value.trim();
+            const student_id_val = document.getElementById('studentStudentId').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const date_of_birth = document.getElementById('studentDOB').value;
+
+            if (!name || !student_id_val || !email) {
+                showMessage('Please fill in all required student fields (Name, Student ID, Email).', true);
+                return;
+            }
+
+            const studentData = {
+                name,
+                student_id: student_id_val,
+                email,
+                date_of_birth: date_of_birth || null // Send null if empty
+            };
+
+            try {
+                if (studentId) {
+                    // Update existing student
+                    await sendData(`students/${studentId}/`, studentData, 'PUT');
+                    showMessage('Student updated successfully!');
+                } else {
+                    // Add new student
+                    await sendData('students/', studentData, 'POST');
+                    showMessage('Student added successfully!');
+                }
+                clearForm(studentForm);
+                await getStudents(); // Refresh list
+            } catch (error) {
+                // Error handled by sendData, just ensure form is not cleared
+                console.error("Student form submission error:", error);
+            }
+        });
+
+        /**
+         * Populates the student form for editing.
+         * @param {number} id - The ID of the student to edit.
+         */
+        function editStudent(id) {
+            const studentToEdit = students.find(s => s.id === id);
+            if (studentToEdit) {
+                document.getElementById('studentId').value = studentToEdit.id;
+                document.getElementById('studentName').value = studentToEdit.name;
+                document.getElementById('studentStudentId').value = studentToEdit.student_id;
+                document.getElementById('studentEmail').value = studentToEdit.email;
+                document.getElementById('studentDOB').value = studentToEdit.date_of_birth || '';
+
+                document.getElementById('saveStudentBtn').textContent = 'Update Student';
+                document.getElementById('cancelStudentEdit').style.display = 'inline-flex'; // Use inline-flex for button styling
+            }
+        }
+
+        /**
+         * Clears the student form and resets buttons.
+         */
+        document.getElementById('cancelStudentEdit').addEventListener('click', () => {
+            clearForm(studentForm);
+        });
+
+        /**
+         * Confirms and deletes a student.
+         * @param {number} id - The ID of the student to delete.
+         * @param {string} name - The name of the student for confirmation message.
+         */
+        function confirmDeleteStudent(id, name) {
+            if (confirm(`Are you sure you want to delete student "${name}"? This will also remove ALL their enrollments and grades.`)) {
+                deleteStudent(id);
+            }
+        }
+
+        /**
+         * Deletes a student via API.
+         * @param {number} id - The ID of the student to delete.
+         */
+        async function deleteStudent(id) {
+            try {
+                await deleteData(`students/${id}/`);
+                showMessage('Student deleted successfully!');
+                await getStudents(); // Refresh list
+                if (selectedStudent && selectedStudent.id === id) {
+                    selectedStudent = null; // Clear selected student if deleted
+                    document.getElementById('studentDetailsTitle').textContent = 'Select a Student to View Details';
+                    selectedStudentInfo.classList.add('hidden');
+                    // Hide both content sections in the dynamic panel
+                    studentDetailEnrollmentContent.style.display = 'none';
+                    gradeDetailsContent.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Delete student error:", error);
+            }
+        });
+
+        // --- Subject CRUD ---
+
+        /**
+         * Fetches all subjects and updates the UI.
+         */
+        async function getSubjects() {
+            subjects = await fetchData('subjects/');
+            renderSubjects();
+            populateEnrollmentSubjectSelect(); // Update dropdown for enrollments
+        }
+
+        /**
+         * Handles subject form submission (add/update).
+         */
+        subjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjectId = document.getElementById('subjectId').value;
+            const name = document.getElementById('subjectName').value.trim();
+            const code = document.getElementById('subjectCode').value.trim();
+
+            if (!name || !code) {
+                showMessage('Please fill in all required subject fields (Name, Code).', true);
+                return;
+            }
+
+            const subjectData = { name, code };
+
+            try {
+                if (subjectId) {
+                    // Update existing subject
+                    await sendData(`subjects/${subjectId}/`, subjectData, 'PUT');
+                    showMessage('Subject updated successfully!');
+                } else {
+                    // Add new subject
+                    await sendData('subjects/', subjectData, 'POST');
+                    showMessage('Subject added successfully!');
+                }
+                clearForm(subjectForm);
+                await getSubjects(); // Refresh list
+            } catch (error) {
+                console.error("Subject form submission error:", error);
+            }
+        });
+
+        /**
+         * Populates the subject form for editing.
+         * @param {number} id - The ID of the subject to edit.
+         */
+        function editSubject(id) {
+            const subjectToEdit = subjects.find(s => s.id === id);
+            if (subjectToEdit) {
+                document.getElementById('subjectId').value = subjectToEdit.id;
+                document.getElementById('subjectName').value = subjectToEdit.name;
+                document.getElementById('subjectCode').value = subjectToEdit.code;
+
+                document.getElementById('saveSubjectBtn').textContent = 'Update Subject';
+                document.getElementById('cancelSubjectEdit').style.display = 'inline-flex'; // Use inline-flex
+            }
+        }
+
+        /**
+         * Clears the subject form and resets buttons.
+         */
+        document.getElementById('cancelSubjectEdit').addEventListener('click', () => {
+            clearForm(subjectForm);
+        });
+
+        /**
+         * Confirms and deletes a subject.
+         * @param {number} id - The ID of the subject to delete.
+         * @param {string} name - The name of the subject for confirmation message.
+         */
+        function confirmDeleteSubject(id, name) {
+            if (confirm(`Are you sure you want to delete subject "${name}"? This will also remove ALL enrollments and grades associated with it.`)) {
+                deleteSubject(id);
+            }
+        }
+
+        /**
+         * Deletes a subject via API.
+         * @param {number} id - The ID of the subject to delete.
+         */
+        async function deleteSubject(id) {
+            try {
+                await deleteData(`subjects/${id}/`);
+                showMessage('Subject deleted successfully!');
+                await getSubjects(); // Refresh list
+                await getStudents(); // Refresh student enrollments too in case any were affected
+            } catch (error) {
+                console.error("Delete subject error:", error);
+            }
+        }
+
+        // --- Enrollment CRUD ---
+
+        /**
+         * Displays details for a selected student.
+         * @param {number} studentId - The ID of the student to display.
+         */
+        function viewStudentDetails(studentId) {
+            selectedStudent = students.find(s => s.id === studentId);
+            if (selectedStudent) {
+                // Show student details and enrollments, hide grade form
+                gradeDetailsContent.style.display = 'none';
+                studentDetailEnrollmentContent.style.display = 'block';
+
+                document.getElementById('studentDetailsTitle').textContent = `Details for ${selectedStudent.name}`;
+                selectedStudentInfo.innerHTML = `
+                    <p><strong>Name:</strong> ${selectedStudent.name}</p>
+                    <p><strong>Student ID:</strong> ${selectedStudent.student_id}</p>
+                    <p><strong>Email:</strong> ${selectedStudent.email}</p>
+                    <p><strong>Date of Birth:</strong> ${selectedStudent.date_of_birth || 'N/A'}</p>
+                `;
+                selectedStudentInfo.classList.remove('hidden'); // Show info section
+                enrollmentSection.style.display = 'block';
+                selectedEnrollment = null; // Clear selected enrollment
+
+                renderEnrollments(selectedStudent.enrollments || []);
+            }
+        }
+
+        /**
+         * Handles enrollment form submission (add new enrollment).
+         */
+        enrollmentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!selectedStudent) {
+                showMessage('Please select a student first.', true);
+                return;
+            }
+            const subjectId = enrollmentSubjectSelect.value;
+            if (!subjectId) {
+                showMessage('Please select a subject to enroll.', true);
+                return;
+            }
+
+            // Before attempting to enroll, check if already enrolled
+            const isAlreadyEnrolled = selectedStudent.enrollments.some(
+                enrollment => enrollment.subject === parseInt(subjectId)
+            );
+            if (isAlreadyEnrolled) {
+                showMessage('Student is already enrolled in this subject!', true);
+                return;
+            }
+
+            const enrollmentData = {
+                student: selectedStudent.id,
+                subject: parseInt(subjectId) // Ensure subject ID is integer
+            };
+
+            try {
+                await sendData('enrollments/', enrollmentData, 'POST');
+                showMessage('Enrollment successful!');
+                // Re-fetch students to update enrollments for the selected student
+                await getStudents();
+                viewStudentDetails(selectedStudent.id); // Re-render details with new enrollment
+                enrollmentSubjectSelect.value = ''; // Reset dropdown
+            } catch (error) {
+                console.error("Enrollment submission error:", error);
+            }
+        });
+
+        /**
+         * Confirms and deletes an enrollment.
+         * @param {number} id - The ID of the enrollment to delete.
+         * @param {string} subjectName - The name of the subject for confirmation.
+         * @param {string} studentName - The name of the student for confirmation.
+         */
+        function confirmDeleteEnrollment(id, subjectName, studentName) {
+            if (confirm(`Are you sure you want to unenroll "${studentName}" from "${subjectName}"? This will also remove their grades for this subject.`)) {
+                deleteEnrollment(id);
+            }
+        }
+
+        /**
+         * Deletes an enrollment via API.
+         * @param {number} id - The ID of the enrollment to delete.
+         */
+        async function deleteEnrollment(id) {
+            try {
+                await deleteData(`enrollments/${id}/`);
+                showMessage('Enrollment deleted successfully!');
+                await getStudents(); // Refresh students to update enrollment list
+                if (selectedStudent) {
+                    viewStudentDetails(selectedStudent.id); // Re-render enrollments
+                }
+                // If the deleted enrollment was the one selected for grade editing
+                if (selectedEnrollment && selectedEnrollment.id === id) {
+                    gradeDetailsContent.style.display = 'none';
+                    selectedEnrollment = null;
+                }
+            } catch (error) {
+                console.error("Delete enrollment error:", error);
+            }
+        });
+
+        // --- Grade Management ---
+
+        /**
+         * Populates the grade form for editing or viewing.
+         * @param {number} enrollmentId - The ID of the enrollment whose grades to edit.
+         */
+        async function editGrades(enrollmentId) {
+            selectedEnrollment = selectedStudent.enrollments.find(e => e.id === enrollmentId);
+            if (selectedEnrollment) {
+                // Hide student details and enrollments, show grade form
+                studentDetailEnrollmentContent.style.display = 'none';
+                gradeDetailsContent.style.display = 'block';
+
+                gradeSubjectName.textContent = selectedEnrollment.subject_details.name;
+
+                const gradeIdField = document.getElementById('gradeId');
+                const enrollmentIdField = document.getElementById('gradeEnrollmentId');
+                const activityGradeInput = document.getElementById('activityGrade');
+                const quizGradeInput = document.getElementById('quizGrade');
+                const examGradeInput = document.getElementById('examGrade');
+
+                // Check if grades exist for this enrollment, otherwise initialize with defaults
+                const currentGrades = selectedEnrollment.grades;
+
+                gradeIdField.value = currentGrades ? currentGrades.id : '';
+                enrollmentIdField.value = selectedEnrollment.id;
+
+                activityGradeInput.value = currentGrades ? parseFloat(currentGrades.activity_grade).toFixed(2) : '0.00';
+                quizGradeInput.value = currentGrades ? parseFloat(currentGrades.quiz_grade).toFixed(2) : '0.00';
+                examGradeInput.value = currentGrades ? parseFloat(currentGrades.exam_grade).toFixed(2) : '0.00';
+
+                updateTotalGradeDisplay(); // Update calculated total
+            }
+        }
+
+        /**
+         * Calculates and updates the total grade display.
+         */
+        function updateTotalGradeDisplay() {
+            const activity = parseFloat(document.getElementById('activityGrade').value) || 0;
+            const quiz = parseFloat(document.getElementById('quizGrade').value) || 0;
+            const exam = parseFloat(document.getElementById('examGrade').value) || 0;
+
+            const total = (activity + quiz + exam) / 3;
+            totalGradeDisplay.textContent = total.toFixed(2);
+        }
+
+        // Add event listeners to grade inputs to update total grade dynamically
+        document.getElementById('activityGrade').addEventListener('input', updateTotalGradeDisplay);
+        document.getElementById('quizGrade').addEventListener('input', updateTotalGradeDisplay);
+        document.getElementById('examGrade').addEventListener('input', updateTotalGradeDisplay);
+
+
+        /**
+         * Handles grade form submission (save/update grades).
+         */
+        gradeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gradeId = document.getElementById('gradeId').value;
+            const enrollmentId = document.getElementById('gradeEnrollmentId').value;
+            const activity_grade = parseFloat(document.getElementById('activityGrade').value);
+            const quiz_grade = parseFloat(document.getElementById('quizGrade').value);
+            const exam_grade = parseFloat(document.getElementById('examGrade').value);
+
+            // Basic validation
+            if (isNaN(activity_grade) || isNaN(quiz_grade) || isNaN(exam_grade) ||
+                activity_grade < 0 || activity_grade > 100 ||
+                quiz_grade < 0 || quiz_grade > 100 ||
+                exam_grade < 0 || exam_grade > 100) {
+                showMessage('Please enter valid grades between 0 and 100.', true);
+                return;
+            }
+
+            const gradeData = {
+                enrollment: parseInt(enrollmentId),
+                activity_grade,
+                quiz_grade,
+                exam_grade
+            };
+
+            try {
+                if (gradeId) {
+                    // Update existing grade
+                    await sendData(`grades/${gradeId}/`, gradeData, 'PUT');
+                    showMessage('Grades updated successfully!');
+                } else {
+                    // This scenario should ideally be handled by the backend creating a Grade with Enrollment.
+                    // If a Grade object wasn't created with enrollment, this would create it.
+                    await sendData('grades/', gradeData, 'POST');
+                    showMessage('Grades added successfully!');
+                }
+                // Refresh data to reflect updated grades
+                await getStudents();
+                if (selectedStudent) {
+                    viewStudentDetails(selectedStudent.id); // Re-render student details to show updated grades
+                }
+                gradeDetailsContent.style.display = 'none'; // Hide grade form after saving
+                studentDetailEnrollmentContent.style.display = 'block'; // Show student details again
+                clearForm(gradeForm);
+            } catch (error) {
+                console.error("Grade form submission error:", error);
+            }
+        });
+
+        /**
+         * Cancels grade editing and hides the form.
+         */
+        document.getElementById('cancelGradeEdit').addEventListener('click', () => {
+            gradeDetailsContent.style.display = 'none';
+            studentDetailEnrollmentContent.style.display = 'block'; // Show student details again
+            clearForm(gradeForm);
+            selectedEnrollment = null;
+        });
+
+        // --- Initial Load ---
+
+        // Function to initialize the application
+        async function initApp() {
+            await getStudents(); // Load students first
+            await getSubjects(); // Load subjects
+        }
+
+        // Run the initialization function when the page loads
+        window.onload = initApp;
+
+    </script>
 </body>
 </html>
