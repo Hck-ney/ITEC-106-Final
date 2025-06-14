@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SECURITY WARNING: keep the secret key used in production secret! ---
 # For production, load from environment variable
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-insecure-default-secret-key-if-not-set-in-env') # Replace with a strong default or ensure it's always set in Render env
+SECRET_KEY = os.environ.get('SECRET_KEY', '8z!$g8vhqh=cos8d5x*q&wi50e!5e+g6^0i^(@)tyq13_t-gh$') # Replace with a strong default or ensure it's always set in Render env
 
 # --- SECURITY WARNING: don't run with debug turned on in production! ---
 # This line correctly sets DEBUG to False on Render (production), and True locally (development).
