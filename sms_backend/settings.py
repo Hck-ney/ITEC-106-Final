@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', '8z!$g8vhqh=cos8d5x*q&wi50e!5e+g6^0i^(@)tyq13_t-gh$') # Replace with a strong default or ensure it's always set in Render env
 
 # --- SECURITY WARNING: don't run with debug turned on in production! ---
-DEBUG = 'RENDER' not in os.environ # Automatically set DEBUG to False on Render
+DEBUG = True # Changed to always be True as requested. REMEMBER: THIS IS INSECURE FOR PRODUCTION!
 
 ALLOWED_HOSTS = []
 # Render sets the "RENDER" environment variable to "true"
